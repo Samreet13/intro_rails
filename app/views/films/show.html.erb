@@ -1,0 +1,61 @@
+<%= link_to "Return to Archives", films_path, class: "btn-back" %>
+
+<div class="page-header">
+  <h1 class="page-title"><%= @film.title %></h1>
+  <span class="record-count">[ EPISODE <%= @film.episode_id %> ]</span>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="detail-panel">
+      <div class="panel-title">Film Data</div>
+      <% [
+        ["Director",     @film.director],
+        ["Producer",     @film.producer],
+        ["Released",     @film.release_date],
+        ["Characters",   @film.people.count],
+        ["Starships",    @film.starships.count]
+      ].each do |k, v| %>
+        <div class="data-row">
+          <span class="data-key"><%= k %></span>
+          <span class="data-val"><%= v %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="detail-panel">
+      <div class="panel-title">Opening Transmission</div>
+      <div class="crawl-box"><%= @film.opening_crawl %></div>
+    </div>
+  </div>
+</div>
+
+<% if @film.people.any? %>
+  <div class="section-head">Personnel — <%= @film.people.count %> records</div>
+  <div class="row g-2">
+    <% @film.people.order(:name).each do |person| %>
+      <div class="col-md-4 col-lg-3">
+        <%= link_to person_path(person), class: "data-card" do %>
+          <div class="card-id"><%= person.gender %></div>
+          <div class="card-name"><%= person.name %></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @film.starships.any? %>
+  <div class="section-head">Fleet Assets — <%= @film.starships.count %> vessels</div>
+  <div class="row g-2">
+    <% @film.starships.each do |ship| %>
+      <div class="col-md-4">
+        <%= link_to starship_path(ship), class: "data-card" do %>
+          <div class="card-id"><%= ship.starship_class %></div>
+          <div class="card-name"><%= ship.name %></div>
+          <div class="card-sub"><%= ship.model %></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

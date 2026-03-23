@@ -1,0 +1,18 @@
+<div class="page-header">
+  <h1 class="page-title">Holonet Archives</h1>
+  <span class="record-count">[ <%= @films.count %> ENTRIES ]</span>
+</div>
+
+<div class="row g-2">
+  <% @films.each do |film| %>
+    <div class="col-md-6">
+      <%= link_to film_path(film), class: "data-card" do %>
+        <div class="card-id">EPISODE <%= film.episode_id %> &nbsp;//&nbsp; <%= film.release_date %></div>
+        <div class="card-name" style="font-size: 1.1rem;"><%= film.title %></div>
+        <div class="card-sub mt-2">
+          <span class="tag tag-muted">Dir. <%= film.director %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,69 @@
+<div class="page-header">
+  <h1 class="page-title">Database Search</h1>
+</div>
+
+<div class="search-bar">
+  <form action="<%= search_path %>" method="get" class="d-flex gap-2 w-100 align-items-center flex-wrap">
+    <label>QUERY:</label>
+    <input type="text" name="q" value="<%= @query %>"
+      placeholder="enter search string..." class="form-control sw-input flex-grow-1">
+    <label>TABLE:</label>
+    <select name="category" class="form-select sw-input" style="max-width: 160px;">
+      <option value="people"    <%= 'selected' if @category.blank? || @category == 'people' %>>PERSONNEL</option>
+      <option value="films"     <%= 'selected' if @category == 'films' %>>ARCHIVES</option>
+      <option value="planets"   <%= 'selected' if @category == 'planets' %>>PLANETS</option>
+      <option value="starships" <%= 'selected' if @category == 'starships' %>>FLEET</option>
+      <option value="species"   <%= 'selected' if @category == 'species' %>>SPECIES</option>
+    </select>
+    <button type="submit" class="btn-terminal">Execute</button>
+  </form>
+</div>
+
+<% if @results.present? %>
+  <p style="font-family: var(--c-mono); font-size: 0.72rem; color: var(--c-accent); margin-bottom: 1rem;">
+    // <%= @results.count %> RECORD<%= @results.count == 1 ? '' : 'S' %> MATCHED &nbsp;|&nbsp; TABLE: <%= @result_type.upcase %>
+  </p>
+  <div class="row g-2">
+    <% @results.each do |result| %>
+      <div class="col-md-4">
+        <% path = case @result_type
+          when "films"     then film_path(result)
+          when "planets"   then planet_path(result)
+          when "starships" then starship_path(result)
+          when "species"   then species_path(result)
+          else                  person_path(result)
+          end %>
+        <%= link_to path, class: "data-card" do %>
+          <div class="card-id"><%= @result_type.upcase %> &nbsp;//&nbsp; ID-<%= "%04d" % result.id %></div>
+          <div class="card-name"><%= result.respond_to?(:title) ? result.title : result.name %></div>
+          <div class="card-sub mt-1">
+            <% if result.is_a?(Person) %>
+              <span class="tag tag-muted"><%= result.gender %></span>
+              <span class="tag tag-muted"><%= result.birth_year %></span>
+            <% elsif result.is_a?(Film) %>
+              <span class="tag tag-blue">Episode <%= result.episode_id %></span>
+            <% elsif result.is_a?(Planet) %>
+              <span class="tag tag-muted"><%= result.climate %></span>
+            <% elsif result.is_a?(Starship) %>
+              <span class="tag tag-blue"><%= result.starship_class %></span>
+            <% elsif result.is_a?(Species) %>
+              <span class="tag tag-muted"><%= result.classification %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% elsif @query.present? %>
+  <div class="detail-panel text-center" style="padding: 3rem;">
+    <p style="font-family: var(--c-mono); color: var(--c-muted); font-size: 0.8rem;">
+      // NO RECORDS MATCHED "<%= @query %>"
+    </p>
+  </div>
+<% else %>
+  <div class="detail-panel text-center" style="padding: 3rem;">
+    <p style="font-family: var(--c-mono); color: var(--c-muted); font-size: 0.8rem;">
+      // AWAITING QUERY INPUT
+    </p>
+  </div>
+<% end %>

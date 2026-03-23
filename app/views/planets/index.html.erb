@@ -1,0 +1,35 @@
+<div class="page-header">
+  <h1 class="page-title">Planetary Registry</h1>
+  <span class="record-count">[ <%= @planets.total_count %> ENTRIES ]</span>
+</div>
+
+<div class="search-bar">
+  <form action="<%= planets_path %>" method="get" class="d-flex gap-2 w-100 align-items-center">
+    <label>QUERY:</label>
+    <input type="text" name="q" value="<%= params[:q] %>"
+      placeholder="search planet designation..." class="form-control sw-input flex-grow-1">
+    <button type="submit" class="btn-terminal">Execute</button>
+    <% if params[:q].present? %>
+      <%= link_to "Clear", planets_path, class: "btn-terminal btn-terminal-sm" %>
+    <% end %>
+  </form>
+</div>
+
+<div class="row g-2">
+  <% @planets.each do |planet| %>
+    <div class="col-md-6 col-lg-4">
+      <%= link_to planet_path(planet), class: "data-card" do %>
+        <div class="card-id">PLANET &nbsp;//&nbsp; POP: <%= planet.population %></div>
+        <div class="card-name"><%= planet.name %></div>
+        <div class="card-sub mt-2">
+          <span class="tag tag-muted"><%= planet.climate %></span>
+          <span class="tag tag-muted"><%= planet.terrain %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="d-flex justify-content-center mt-4">
+  <%= paginate @planets %>
+</div>

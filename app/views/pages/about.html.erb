@@ -1,0 +1,72 @@
+<div class="page-header">
+  <h1 class="page-title">System Information</h1>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="detail-panel">
+      <div class="panel-title">Data Sources</div>
+      <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">
+        This system ingests data from five endpoints of the
+        <a href="https://swapi.dev" style="color: var(--c-accent);">Star Wars API (SWAPI)</a>,
+        a free, open, unauthenticated REST API. All endpoints are fully paginated and fetched during seeding.
+      </p>
+
+      <% [
+        ["Source 1 — Personnel",   "https://swapi.dev/api/people/",
+          "Characters with name, birth year, gender, physical attributes, homeworld and species references. Stored in the people table."],
+        ["Source 2 — Planets",     "https://swapi.dev/api/planets/",
+          "Planets with climate, terrain, population, gravity, diameter, and orbital data. Stored in the planets table."],
+        ["Source 3 — Archives",    "https://swapi.dev/api/films/",
+          "The six main films with episode number, director, producer, release date, and opening crawl. Join tables link films to characters and starships."],
+        ["Source 4 — Fleet",       "https://swapi.dev/api/starships/",
+          "Hyperdrive-capable vessels with model, class, manufacturer, crew size, and technical specs."],
+        ["Source 5 — Species",     "https://swapi.dev/api/species/",
+          "Species with classification, language, physical traits, and member references."]
+      ].each do |title, url, desc| %>
+        <div class="data-row" style="flex-direction: column; padding: 0.8rem 0;">
+          <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.4rem;">
+            <span class="tag tag-blue"><%= title %></span>
+            <code style="font-size: 0.7rem; color: var(--c-muted);"><%= url %></code>
+          </div>
+          <p style="font-size: 0.82rem; margin: 0; padding-left: 0.2rem;"><%= desc %></p>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="detail-panel">
+      <div class="panel-title">Database Relationships</div>
+      <% [
+        ["planets → people",          "One-to-many (homeworld)"],
+        ["species → people",          "One-to-many"],
+        ["films ↔ people",            "Many-to-many via film_characters"],
+        ["films ↔ starships",         "Many-to-many via film_starships"]
+      ].each do |k, v| %>
+        <div class="data-row">
+          <span class="data-key" style="width: 200px;"><code style="color: var(--c-accent2); font-size: 0.72rem;"><%= k %></code></span>
+          <span class="data-val" style="font-size: 0.82rem;"><%= v %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="detail-panel">
+      <div class="panel-title">System Stack</div>
+      <% [
+        ["Framework",   "Ruby on Rails 7"],
+        ["Database",    "SQLite3"],
+        ["Pagination",  "Kaminari"],
+        ["HTTP Client", "HTTParty"],
+        ["CSS",         "Bootstrap 5"],
+        ["Fonts",       "Share Tech Mono + Titillium Web"],
+        ["Data Source", "swapi.dev"]
+      ].each do |k, v| %>
+        <div class="data-row">
+          <span class="data-key"><%= k %></span>
+          <span class="data-val" style="font-size: 0.82rem;"><%= v %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+<%= link_to "Return to Fleet Registry", starships_path, class: "btn-back" %>
+
+<div class="page-header">
+  <h1 class="page-title"><%= @starship.name %></h1>
+  <span class="record-count">[ <%= @starship.starship_class %> ]</span>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="detail-panel">
+      <div class="panel-title">Technical Specifications</div>
+      <% [
+        ["Model",         @starship.model],
+        ["Manufacturer",  @starship.manufacturer],
+        ["Length",        "#{@starship.length} m"],
+        ["Crew",          @starship.crew],
+        ["Passengers",    @starship.passengers],
+        ["Hyperdrive",    @starship.hyperdrive_rating],
+        ["MGLT",          @starship.mglt],
+        ["Cargo",         "#{@starship.cargo_capacity} kg"],
+        ["Consumables",   @starship.consumables],
+        ["Cost",          "#{@starship.cost_in_credits} credits"]
+      ].each do |k, v| %>
+        <div class="data-row">
+          <span class="data-key"><%= k %></span>
+          <span class="data-val"><%= v.presence || "—" %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="detail-panel">
+      <div class="panel-title">Holonet Appearances</div>
+      <% if @starship.films.any? %>
+        <% @starship.films.order(:episode_id).each do |film| %>
+          <%= link_to film_path(film), class: "data-card mb-2" do %>
+            <div class="card-id">Episode <%= film.episode_id %></div>
+            <div class="card-name"><%= film.title %></div>
+          <% end %>
+        <% end %>
+      <% else %>
+        <p style="color: var(--c-muted); font-family: var(--c-mono); font-size: 0.75rem;">NO RECORDS FOUND</p>
+      <% end %>
+    </div>
+  </div>
+</div>

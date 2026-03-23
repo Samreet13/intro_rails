@@ -1,22 +1,544 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title><%= content_for(:title) || "Swapi Rails" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Imperial Database</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Titillium+Web:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --c-bg:       #030508;
+        --c-panel:    #080d14;
+        --c-card:     #0b1220;
+        --c-border:   #1a2d45;
+        --c-accent:   #1e90ff;
+        --c-accent2:  #00cfff;
+        --c-danger:   #ff3c3c;
+        --c-text:     #9ab8d8;
+        --c-bright:   #d4e8ff;
+        --c-muted:    #3a5570;
+        --c-mono:     'Share Tech Mono', monospace;
+        --c-sans:     'Titillium Web', sans-serif;
+      }
 
-    <%= yield :head %>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+      body {
+        background: var(--c-bg);
+        color: var(--c-text);
+        font-family: var(--c-sans);
+        font-weight: 300;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Scanline overlay */
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0,0,0,0.08) 2px,
+          rgba(0,0,0,0.08) 4px
+        );
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      /* Top status bar */
+      .status-bar {
+        background: var(--c-panel);
+        border-bottom: 1px solid var(--c-border);
+        padding: 0.3rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--c-mono);
+        font-size: 0.65rem;
+        color: var(--c-muted);
+        letter-spacing: 0.05em;
+      }
+
+      .status-bar .status-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--c-accent);
+        margin-right: 0.4rem;
+        box-shadow: 0 0 6px var(--c-accent);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+
+      /* Navbar */
+      .navbar {
+        background: var(--c-panel) !important;
+        border-bottom: 2px solid var(--c-accent);
+        padding: 0.75rem 0;
+        position: relative;
+        z-index: 100;
+        box-shadow: 0 4px 30px rgba(30,144,255,0.15);
+      }
+
+      .navbar-brand {
+        font-family: var(--c-mono);
+        color: var(--c-accent2) !important;
+        font-size: 1rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        text-shadow: 0 0 15px rgba(0,207,255,0.6);
+      }
+
+      .navbar-brand span {
+        color: var(--c-danger);
+        text-shadow: 0 0 10px rgba(255,60,60,0.7);
+      }
+
+      .nav-link {
+        font-family: var(--c-mono);
+        color: var(--c-muted) !important;
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.5rem 0.9rem !important;
+        transition: all 0.15s;
+        position: relative;
+      }
+
+      .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0.9rem; right: 0.9rem;
+        height: 1px;
+        background: var(--c-accent);
+        transform: scaleX(0);
+        transition: transform 0.15s;
+      }
+
+      .nav-link:hover, .nav-link.active {
+        color: var(--c-accent2) !important;
+      }
+
+      .nav-link:hover::after, .nav-link.active::after {
+        transform: scaleX(1);
+      }
+
+      /* Main */
+      .main-content {
+        position: relative;
+        z-index: 1;
+        padding: 2rem 0 4rem;
+      }
+
+      /* Page header */
+      .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--c-border);
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+      }
+
+      .page-title {
+        font-family: var(--c-mono);
+        font-size: 1.4rem;
+        color: var(--c-bright);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .page-title::before {
+        content: '> ';
+        color: var(--c-accent);
+      }
+
+      .record-count {
+        font-family: var(--c-mono);
+        font-size: 0.7rem;
+        color: var(--c-muted);
+        letter-spacing: 0.05em;
+      }
+
+      /* Cards */
+      .data-card {
+        background: var(--c-card);
+        border: 1px solid var(--c-border);
+        border-left: 3px solid var(--c-accent);
+        padding: 1rem 1.2rem;
+        margin-bottom: 0.6rem;
+        text-decoration: none;
+        display: block;
+        color: var(--c-text);
+        transition: all 0.15s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .data-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(90deg, rgba(30,144,255,0.04) 0%, transparent 60%);
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .data-card:hover {
+        border-left-color: var(--c-accent2);
+        border-color: var(--c-accent);
+        color: var(--c-text);
+        text-decoration: none;
+        box-shadow: 0 0 20px rgba(30,144,255,0.1), inset 0 0 20px rgba(30,144,255,0.02);
+      }
+
+      .data-card:hover::before { opacity: 1; }
+
+      .data-card:hover .card-id { color: var(--c-accent2); }
+
+      .card-id {
+        font-family: var(--c-mono);
+        font-size: 0.65rem;
+        color: var(--c-muted);
+        letter-spacing: 0.08em;
+        margin-bottom: 0.3rem;
+        transition: color 0.15s;
+      }
+
+      .card-name {
+        font-family: var(--c-sans);
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--c-bright);
+        letter-spacing: 0.03em;
+      }
+
+      .card-sub {
+        font-family: var(--c-mono);
+        font-size: 0.72rem;
+        color: var(--c-muted);
+        margin-top: 0.3rem;
+        letter-spacing: 0.03em;
+      }
+
+      /* Tag/badge */
+      .tag {
+        display: inline-block;
+        font-family: var(--c-mono);
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.15rem 0.5rem;
+        border: 1px solid;
+        margin-right: 0.3rem;
+      }
+
+      .tag-blue {
+        color: var(--c-accent2);
+        border-color: rgba(0,207,255,0.3);
+        background: rgba(0,207,255,0.05);
+      }
+
+      .tag-red {
+        color: var(--c-danger);
+        border-color: rgba(255,60,60,0.3);
+        background: rgba(255,60,60,0.05);
+      }
+
+      .tag-muted {
+        color: var(--c-muted);
+        border-color: var(--c-border);
+        background: transparent;
+      }
+
+      /* Detail panel */
+      .detail-panel {
+        background: var(--c-card);
+        border: 1px solid var(--c-border);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+      }
+
+      .detail-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--c-accent) 0%, transparent 100%);
+      }
+
+      .panel-title {
+        font-family: var(--c-mono);
+        font-size: 0.7rem;
+        color: var(--c-accent);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid var(--c-border);
+      }
+
+      .data-row {
+        display: flex;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid rgba(26,45,69,0.5);
+        font-size: 0.85rem;
+      }
+
+      .data-row:last-child { border-bottom: none; }
+
+      .data-key {
+        font-family: var(--c-mono);
+        font-size: 0.7rem;
+        color: var(--c-muted);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        width: 140px;
+        flex-shrink: 0;
+        padding-top: 0.1rem;
+      }
+
+      .data-val {
+        color: var(--c-bright);
+        font-weight: 400;
+        flex: 1;
+      }
+
+      /* Search / forms */
+      .search-bar {
+        background: var(--c-card);
+        border: 1px solid var(--c-border);
+        padding: 1rem 1.2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+      }
+
+      .search-bar label {
+        font-family: var(--c-mono);
+        font-size: 0.7rem;
+        color: var(--c-accent);
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+      }
+
+      .sw-input {
+        background: var(--c-bg) !important;
+        border: 1px solid var(--c-border) !important;
+        color: var(--c-bright) !important;
+        font-family: var(--c-mono) !important;
+        font-size: 0.8rem !important;
+        border-radius: 0 !important;
+        padding: 0.45rem 0.8rem !important;
+        letter-spacing: 0.05em;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .sw-input:focus {
+        border-color: var(--c-accent) !important;
+        box-shadow: 0 0 0 2px rgba(30,144,255,0.15) !important;
+        outline: none !important;
+        background: var(--c-panel) !important;
+      }
+
+      .sw-input::placeholder {
+        color: var(--c-muted) !important;
+        font-size: 0.75rem;
+      }
+
+      select.sw-input option {
+        background: var(--c-card);
+        color: var(--c-bright);
+      }
+
+      /* Buttons */
+      .btn-terminal {
+        background: transparent;
+        border: 1px solid var(--c-accent);
+        color: var(--c-accent);
+        font-family: var(--c-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.45rem 1.2rem;
+        border-radius: 0;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+        display: inline-block;
+        white-space: nowrap;
+      }
+
+      .btn-terminal:hover {
+        background: var(--c-accent);
+        color: var(--c-bg);
+        box-shadow: 0 0 15px rgba(30,144,255,0.4);
+        text-decoration: none;
+      }
+
+      .btn-terminal-sm {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.8rem;
+      }
+
+      .btn-back {
+        font-family: var(--c-mono);
+        font-size: 0.7rem;
+        color: var(--c-muted);
+        text-decoration: none;
+        letter-spacing: 0.05em;
+        transition: color 0.15s;
+        display: inline-block;
+        margin-bottom: 1.2rem;
+      }
+
+      .btn-back::before { content: '<< '; }
+
+      .btn-back:hover {
+        color: var(--c-accent2);
+        text-decoration: none;
+      }
+
+      /* Divider */
+      .section-head {
+        font-family: var(--c-mono);
+        font-size: 0.68rem;
+        color: var(--c-accent);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin: 2rem 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--c-border);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .section-head::before {
+        content: '//';
+        color: var(--c-muted);
+      }
+
+      /* Opening crawl */
+      .crawl-box {
+        background: #000;
+        border: 1px solid var(--c-border);
+        padding: 1.2rem 1.5rem;
+        font-family: var(--c-mono);
+        font-size: 0.78rem;
+        color: #4a8aaa;
+        line-height: 1.9;
+        max-height: 220px;
+        overflow-y: auto;
+        white-space: pre-line;
+        letter-spacing: 0.02em;
+      }
+
+      .crawl-box::-webkit-scrollbar { width: 4px; }
+      .crawl-box::-webkit-scrollbar-track { background: #000; }
+      .crawl-box::-webkit-scrollbar-thumb { background: var(--c-accent); }
+
+      /* Pagination */
+      .pagination .page-link {
+        background: var(--c-card);
+        border-color: var(--c-border);
+        color: var(--c-muted);
+        font-family: var(--c-mono);
+        font-size: 0.72rem;
+        border-radius: 0 !important;
+        padding: 0.4rem 0.8rem;
+      }
+
+      .pagination .page-link:hover {
+        background: var(--c-panel);
+        border-color: var(--c-accent);
+        color: var(--c-accent2);
+      }
+
+      .pagination .page-item.active .page-link {
+        background: var(--c-accent);
+        border-color: var(--c-accent);
+        color: var(--c-bg);
+        font-weight: 700;
+      }
+
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--c-border);
+        padding: 1.2rem 0;
+        color: var(--c-muted);
+        font-family: var(--c-mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.06em;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+      }
+
+      footer a { color: var(--c-accent); text-decoration: none; }
+      footer a:hover { color: var(--c-accent2); }
+
+      /* Grid lines background effect */
+      .container { position: relative; }
+    </style>
   </head>
-
   <body>
-    <%= yield %>
+    <div class="status-bar">
+      <div><span class="status-dot"></span>IMPERIAL HOLONET — SECURE CHANNEL 7</div>
+      <div>CLEARANCE: LEVEL 5 &nbsp;|&nbsp; NODE: CORUSCANT-ALPHA &nbsp;|&nbsp; STATUS: ONLINE</div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <a class="navbar-brand" href="<%= root_path %>">
+          <span>[IMPERIAL]</span> DATABASE v4.2
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+          style="border: 1px solid var(--c-muted); padding: 0.3rem 0.6rem;">
+          <span style="color: var(--c-accent); font-size: 1.1rem;">&#9776;</span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+          <ul class="navbar-nav ms-auto gap-1">
+            <li class="nav-item"><%= link_to "Personnel", people_path, class: "nav-link #{controller_name == 'people' ? 'active' : ''}" %></li>
+            <li class="nav-item"><%= link_to "Archives", films_path, class: "nav-link #{controller_name == 'films' ? 'active' : ''}" %></li>
+            <li class="nav-item"><%= link_to "Planets", planets_path, class: "nav-link #{controller_name == 'planets' ? 'active' : ''}" %></li>
+            <li class="nav-item"><%= link_to "Fleet", starships_path, class: "nav-link #{controller_name == 'starships' ? 'active' : ''}" %></li>
+            <li class="nav-item"><%= link_to "Species", species_index_path, class: "nav-link #{controller_name == 'species' ? 'active' : ''}" %></li>
+            <li class="nav-item"><%= link_to "Search", search_path, class: "nav-link #{controller_name == 'search' ? 'active' : ''}" %></li>
+            <li class="nav-item"><%= link_to "About", about_path, class: "nav-link #{controller_name == 'pages' ? 'active' : ''}" %></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="container">
+        <%= yield %>
+      </div>
+    </main>
+
+    <footer>
+      <div class="container">
+        DATA SOURCE: <a href="https://swapi.dev">SWAPI.DEV</a>
+        &nbsp;//&nbsp; STAR WARS &trade; LUCASFILM LTD
+        &nbsp;//&nbsp; FOR AUTHORIZED USE ONLY
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

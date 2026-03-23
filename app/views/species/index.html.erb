@@ -1,0 +1,25 @@
+<div class="page-header">
+  <h1 class="page-title">Species Catalog</h1>
+  <span class="record-count">[ <%= @species.total_count %> ENTRIES ]</span>
+</div>
+
+<div class="row g-2">
+  <% @species.each do |sp| %>
+    <div class="col-md-6 col-lg-4">
+      <%= link_to species_path(sp), class: "data-card" do %>
+        <div class="card-id"><%= sp.classification %> &nbsp;//&nbsp; <%= sp.designation %></div>
+        <div class="card-name"><%= sp.name %></div>
+        <div class="card-sub mt-2">
+          <span class="tag tag-muted">Lang: <%= sp.language %></span>
+          <% if sp.average_lifespan.present? && sp.average_lifespan != "unknown" %>
+            <span class="tag tag-muted">Lifespan: <%= sp.average_lifespan %>yr</span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="d-flex justify-content-center mt-4">
+  <%= paginate @species %>
+</div>

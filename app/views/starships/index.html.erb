@@ -1,0 +1,37 @@
+<div class="page-header">
+  <h1 class="page-title">Fleet Registry</h1>
+  <span class="record-count">[ <%= @starships.total_count %> VESSELS ]</span>
+</div>
+
+<div class="search-bar">
+  <form action="<%= starships_path %>" method="get" class="d-flex gap-2 w-100 align-items-center">
+    <label>QUERY:</label>
+    <input type="text" name="q" value="<%= params[:q] %>"
+      placeholder="search vessel name or model..." class="form-control sw-input flex-grow-1">
+    <button type="submit" class="btn-terminal">Execute</button>
+    <% if params[:q].present? %>
+      <%= link_to "Clear", starships_path, class: "btn-terminal btn-terminal-sm" %>
+    <% end %>
+  </form>
+</div>
+
+<div class="row g-2">
+  <% @starships.each do |ship| %>
+    <div class="col-md-6 col-lg-4">
+      <%= link_to starship_path(ship), class: "data-card" do %>
+        <div class="card-id"><%= ship.starship_class %></div>
+        <div class="card-name"><%= ship.name %></div>
+        <div class="card-sub mt-2">
+          <span class="tag tag-blue"><%= ship.model %></span>
+          <% if ship.hyperdrive_rating.present? && ship.hyperdrive_rating != "unknown" %>
+            <span class="tag tag-muted">Class <%= ship.hyperdrive_rating %> Hyperdrive</span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="d-flex justify-content-center mt-4">
+  <%= paginate @starships %>
+</div>

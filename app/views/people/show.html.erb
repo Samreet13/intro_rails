@@ -1,0 +1,84 @@
+<%= link_to "Return to Personnel Records", people_path, class: "btn-back" %>
+
+<div class="page-header">
+  <h1 class="page-title"><%= @person.name %></h1>
+  <span class="record-count">[ REC-<%= "%04d" % @person.id %> ]</span>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="detail-panel">
+      <div class="panel-title">Biographical Data</div>
+      <% [
+        ["Birth Year",  @person.birth_year],
+        ["Gender",      @person.gender],
+        ["Height",      @person.height != "unknown" ? "#{@person.height} cm" : "—"],
+        ["Mass",        @person.mass != "unknown" ? "#{@person.mass} kg" : "—"],
+        ["Hair Color",  @person.hair_color],
+        ["Eye Color",   @person.eye_color],
+        ["Skin Color",  @person.skin_color]
+      ].each do |k, v| %>
+        <div class="data-row">
+          <span class="data-key"><%= k %></span>
+          <span class="data-val"><%= v.presence || "—" %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="detail-panel">
+      <div class="panel-title">Origin Data</div>
+      <div class="data-row">
+        <span class="data-key">Homeworld</span>
+        <span class="data-val">
+          <% if @person.planet.present? %>
+            <%= link_to @person.planet.name, planet_path(@person.planet), class: "btn-terminal btn-terminal-sm" %>
+          <% else %>
+            <span style="color: var(--c-muted);">Unknown</span>
+          <% end %>
+        </span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">Species</span>
+        <span class="data-val">
+          <% if @person.species.present? %>
+            <%= link_to @person.species.name, species_path(@person.species), class: "btn-terminal btn-terminal-sm" %>
+          <% else %>
+            <span style="color: var(--c-muted);">Human (assumed)</span>
+          <% end %>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if @person.films.any? %>
+  <div class="section-head">Film Appearances</div>
+  <div class="row g-2">
+    <% @person.films.order(:episode_id).each do |film| %>
+      <div class="col-md-4">
+        <%= link_to film_path(film), class: "data-card" do %>
+          <div class="card-id">EPISODE <%= film.episode_id %> &nbsp;// &nbsp;<%= film.release_date %></div>
+          <div class="card-name"><%= film.title %></div>
+          <div class="card-sub">Dir. <%= film.director %></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @person.starships.any? %>
+  <div class="section-head">Assigned Vessels</div>
+  <div class="row g-2">
+    <% @person.starships.each do |ship| %>
+      <div class="col-md-4">
+        <%= link_to starship_path(ship), class: "data-card" do %>
+          <div class="card-id"><%= ship.starship_class %></div>
+          <div class="card-name"><%= ship.name %></div>
+          <div class="card-sub"><%= ship.model %></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

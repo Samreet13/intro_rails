@@ -1,0 +1,43 @@
+<%= link_to "Return to Species Catalog", species_index_path, class: "btn-back" %>
+
+<div class="page-header">
+  <h1 class="page-title"><%= @species.name %></h1>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="detail-panel">
+      <div class="panel-title">Species Data</div>
+      <% [
+        ["Classification", @species.classification],
+        ["Designation",    @species.designation],
+        ["Language",       @species.language],
+        ["Avg Height",     "#{@species.average_height} cm"],
+        ["Avg Lifespan",   "#{@species.average_lifespan} yrs"],
+        ["Eye Colors",     @species.eye_colors],
+        ["Hair Colors",    @species.hair_colors],
+        ["Skin Colors",    @species.skin_colors]
+      ].each do |k, v| %>
+        <div class="data-row">
+          <span class="data-key"><%= k %></span>
+          <span class="data-val"><%= v.presence || "—" %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="detail-panel">
+      <div class="panel-title">Known Members — <%= @species.people.count %> records</div>
+      <% if @species.people.any? %>
+        <div class="d-flex flex-wrap gap-2 mt-1">
+          <% @species.people.order(:name).each do |person| %>
+            <%= link_to person.name, person_path(person), class: "btn-terminal btn-terminal-sm" %>
+          <% end %>
+        </div>
+      <% else %>
+        <p style="color: var(--c-muted); font-family: var(--c-mono); font-size: 0.75rem;">NO RECORDS FOUND</p>
+      <% end %>
+    </div>
+  </div>
+</div>

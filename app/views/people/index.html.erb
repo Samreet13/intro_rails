@@ -1,0 +1,49 @@
+<div class="page-header">
+  <h1 class="page-title">Personnel Records</h1>
+  <span class="record-count">[ <%= @people.total_count %> ENTRIES ]</span>
+</div>
+
+<div class="search-bar">
+  <form action="<%= people_path %>" method="get" class="d-flex gap-2 w-100 align-items-center flex-wrap">
+    <label>QUERY:</label>
+    <input type="text" name="q" value="<%= params[:q] %>"
+      placeholder="search designation..." class="form-control sw-input flex-grow-1">
+    <label>SPECIES:</label>
+    <select name="species_id" class="form-select sw-input" style="max-width: 200px;">
+      <option value="">ALL</option>
+      <% @species_list.each do |s| %>
+        <option value="<%= s.id %>" <%= 'selected' if params[:species_id] == s.id.to_s %>><%= s.name.upcase %></option>
+      <% end %>
+    </select>
+    <button type="submit" class="btn-terminal">Execute</button>
+    <% if params[:q].present? || params[:species_id].present? %>
+      <%= link_to "Clear", people_path, class: "btn-terminal btn-terminal-sm" %>
+    <% end %>
+  </form>
+</div>
+
+<div class="row g-2">
+  <% @people.each_with_index do |person, i| %>
+    <div class="col-md-6 col-lg-4">
+      <%= link_to person_path(person), class: "data-card" do %>
+        <div class="card-id">REC-<%= "%04d" % person.id %> &nbsp;//&nbsp; <%= person.birth_year %></div>
+        <div class="card-name"><%= person.name %></div>
+        <div class="card-sub mt-2">
+          <% if person.species.present? %>
+            <span class="tag tag-blue"><%= person.species.name %></span>
+          <% else %>
+            <span class="tag tag-muted">Human</span>
+          <% end %>
+          <% if person.planet.present? %>
+            <span class="tag tag-muted"><%= person.planet.name %></span>
+          <% end %>
+          <span class="tag tag-muted"><%= person.gender %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="d-flex justify-content-center mt-4">
+  <%= paginate @people %>
+</div>
