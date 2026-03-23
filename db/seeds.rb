@@ -120,4 +120,4 @@ total = Planet.count + Species.count + Starship.count + Person.count +
         Film.count + FilmCharacter.count + FilmStarship.count
 puts ""
 puts "Total rows: #{total}"
-puts "Seeding complete." 
+puts "Seeding complete."
