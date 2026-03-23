@@ -1,72 +1,131 @@
-<div class="page-header">
-  <h1 class="page-title">System Information</h1>
-</div>
 
-<div class="row g-3">
-  <div class="col-lg-8">
-    <div class="detail-panel">
-      <div class="panel-title">Data Sources</div>
-      <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">
-        This system ingests data from five endpoints of the
-        <a href="https://swapi.dev" style="color: var(--c-accent);">Star Wars API (SWAPI)</a>,
-        a free, open, unauthenticated REST API. All endpoints are fully paginated and fetched during seeding.
-      </p>
+<style>
+#erd { padding: 1rem 0; }
+#erd svg { width: 100%; }
+</style>
+<div id="erd"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    primaryColor: dark ? '#1e2a3a' : '#e8f0fb',
+    primaryBorderColor: dark ? '#3a5570' : '#378ADD',
+    primaryTextColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const diagram = `erDiagram
+  PLANETS {
+    int id PK
+    string name
+    string climate
+    string terrain
+    string population
+    string diameter
+    string rotation_period
+    string orbital_period
+    string gravity
+    string surface_water
+  }
+  SPECIES {
+    int id PK
+    string name
+    string classification
+    string designation
+    string language
+    string average_height
+    string average_lifespan
+    string eye_colors
+    string hair_colors
+    string skin_colors
+  }
+  PEOPLE {
+    int id PK
+    string name
+    string birth_year
+    string gender
+    string height
+    string mass
+    string hair_color
+    string eye_color
+    string skin_color
+    int planet_id FK
+    int species_id FK
+  }
+  FILMS {
+    int id PK
+    string title
+    int episode_id
+    string director
+    string producer
+    string release_date
+    text opening_crawl
+  }
+  STARSHIPS {
+    int id PK
+    string name
+    string model
+    string starship_class
+    string manufacturer
+    string cost_in_credits
+    string length
+    string crew
+    string passengers
+    string hyperdrive_rating
+    string mglt
+    string cargo_capacity
+    string consumables
+  }
+  FILM_CHARACTERS {
+    int id PK
+    int film_id FK
+    int person_id FK
+  }
+  FILM_STARSHIPS {
+    int id PK
+    int film_id FK
+    int starship_id FK
+  }
+  PLANETS ||--o{ PEOPLE : "homeworld"
+  SPECIES ||--o{ PEOPLE : "belongs to"
+  PEOPLE ||--o{ FILM_CHARACTERS : "appears in"
+  FILMS ||--o{ FILM_CHARACTERS : "features"
+  FILMS ||--o{ FILM_STARSHIPS : "includes"
+  STARSHIPS ||--o{ FILM_STARSHIPS : "appears in"
+`;
+const { svg } = await mermaid.render('erd-svg', diagram);
+document.getElementById('erd').innerHTML = svg;
 
-      <% [
-        ["Source 1 — Personnel",   "https://swapi.dev/api/people/",
-          "Characters with name, birth year, gender, physical attributes, homeworld and species references. Stored in the people table."],
-        ["Source 2 — Planets",     "https://swapi.dev/api/planets/",
-          "Planets with climate, terrain, population, gravity, diameter, and orbital data. Stored in the planets table."],
-        ["Source 3 — Archives",    "https://swapi.dev/api/films/",
-          "The six main films with episode number, director, producer, release date, and opening crawl. Join tables link films to characters and starships."],
-        ["Source 4 — Fleet",       "https://swapi.dev/api/starships/",
-          "Hyperdrive-capable vessels with model, class, manufacturer, crew size, and technical specs."],
-        ["Source 5 — Species",     "https://swapi.dev/api/species/",
-          "Species with classification, language, physical traits, and member references."]
-      ].each do |title, url, desc| %>
-        <div class="data-row" style="flex-direction: column; padding: 0.8rem 0;">
-          <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.4rem;">
-            <span class="tag tag-blue"><%= title %></span>
-            <code style="font-size: 0.7rem; color: var(--c-muted);"><%= url %></code>
-          </div>
-          <p style="font-size: 0.82rem; margin: 0; padding-left: 0.2rem;"><%= desc %></p>
-        </div>
-      <% end %>
-    </div>
+document.querySelectorAll('#erd svg .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
 
-    <div class="detail-panel">
-      <div class="panel-title">Database Relationships</div>
-      <% [
-        ["planets → people",          "One-to-many (homeworld)"],
-        ["species → people",          "One-to-many"],
-        ["films ↔ people",            "Many-to-many via film_characters"],
-        ["films ↔ starships",         "Many-to-many via film_starships"]
-      ].each do |k, v| %>
-        <div class="data-row">
-          <span class="data-key" style="width: 200px;"><code style="color: var(--c-accent2); font-size: 0.72rem;"><%= k %></code></span>
-          <span class="data-val" style="font-size: 0.82rem;"><%= v %></span>
-        </div>
-      <% end %>
-    </div>
-  </div>
-
-  <div class="col-lg-4">
-    <div class="detail-panel">
-      <div class="panel-title">System Stack</div>
-      <% [
-        ["Framework",   "Ruby on Rails 7"],
-        ["Database",    "SQLite3"],
-        ["Pagination",  "Kaminari"],
-        ["HTTP Client", "HTTParty"],
-        ["CSS",         "Bootstrap 5"],
-        ["Fonts",       "Share Tech Mono + Titillium Web"],
-        ["Data Source", "swapi.dev"]
-      ].each do |k, v| %>
-        <div class="data-row">
-          <span class="data-key"><%= k %></span>
-          <span class="data-val" style="font-size: 0.82rem;"><%= v %></span>
-        </div>
-      <% end %>
-    </div>
-  </div>
-</div>
+document.querySelectorAll('#erd svg .row-rect-odd path, #erd svg .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
