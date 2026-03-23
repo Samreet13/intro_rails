@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  classification: MyString
+  designation: MyString
+  language: MyString
+  average_height: MyString
+  average_lifespan: MyString
+  eye_colors: MyString
+  hair_colors: MyString
+  skin_colors: MyString
+
+two:
+  name: MyString
+  classification: MyString
+  designation: MyString
+  language: MyString
+  average_height: MyString
+  average_lifespan: MyString
+  eye_colors: MyString
+  hair_colors: MyString
+  skin_colors: MyString
